@@ -1,9 +1,11 @@
 ﻿using Microsoft.ML;
 using Microsoft.ML.Data;
+using ObjectDetectionLib.Extensions;
 using ObjectDetectionLib.FramePipeline.Abstractions;
 using ObjectDetectionLib.ML.YoloV4.ModelData;
 using ObjectDetectionLib.ML.YoloV4.PostProcessor;
 using ObjectDetectionLib.Pipeline.Abstractions;
+using ObjectDetectionLib.Pipeline.InitValueModels;
 
 namespace ObjectDetectionLib.Pipeline.Processors.DetectionFrameProcessor
 {
@@ -12,16 +14,21 @@ namespace ObjectDetectionLib.Pipeline.Processors.DetectionFrameProcessor
     {
         public ProcessorResult Process(IFramePipelineContext context)
         {
-            MLImage frame = context.GetInitValue<MLImage>();
+            FramePipelineInitValue init = context.GetInitValue<FramePipelineInitValue>();
+            using MLImage frame = init.FrameInfo.Frame.ToMLImage();
 
             var yoloPrediction = yoloEngine.Predict(new YoloInputData(frame));
             var yoloResults = YoloPostProcessor.GetResults(yoloPrediction);
 
-            if (yoloResults == null || yoloResults.Count == 0) return ProcessorResult.NO_RESULT;
+            var filteredResults = yoloResults.Where(r => r.Label == init.AIM).ToList();
+            
+            context.AddProcessorResult(filteredResults);
 
-            context.AddProcessorResult(yoloResults);
+            if (filteredResults.Count > 0) {
+                return ProcessorResult.SUCCESS;
+            }
 
-            return ProcessorResult.SUCCESS;
+            return ProcessorResult.NO_RESULT;
         }
     }
 }

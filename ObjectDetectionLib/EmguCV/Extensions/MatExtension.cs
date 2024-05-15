@@ -7,7 +7,7 @@ namespace ObjectDetectionLib.Extensions
 {
     public static class MatExtension
     {
-        public static MLImage ConvertMatToMLImage(this Mat mat)
+        public static MLImage ToMLImage(this Mat mat)
         {
             Image<Bgr, byte> emguImage = mat.ToImage<Bgr, byte>();
             byte[] imageBytes = emguImage.ToJpegData();

@@ -9,7 +9,7 @@ namespace ObjectDetectionLib.ML.YoloV4.PostProcessor
 {
     public static class YoloPostProcessor
     {
-        public static IReadOnlyList<ObjectDetectionResult> GetResults(YoloOutputData outputData, float scoreThres = 0.5f, float iouThres = 0.5f)
+        public static IReadOnlyList<ObjectDetectionResult> GetResults(YoloOutputData outputData, float scoreThres = 0.5f, float iouThres = 0.8f)
         {
             List<float[]> postProcesssedResults = [];
             int anchorsCount = YoloConfiguration.Anchors.Length;

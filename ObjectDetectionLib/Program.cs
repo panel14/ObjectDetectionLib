@@ -1,8 +1,8 @@
 ﻿using Emgu.CV;
-using Emgu.CV.CvEnum;
 using Microsoft.ML;
-using ObjectDetectionLib.EmguCV;
+using Microsoft.ML.Data;
 using ObjectDetectionLib.FramePipeline.Abstractions;
+using ObjectDetectionLib.InputModels;
 using ObjectDetectionLib.ML.Midas;
 using ObjectDetectionLib.ML.Midas.OnnxScorer;
 using ObjectDetectionLib.ML.YoloV4;
@@ -11,6 +11,11 @@ using ObjectDetectionLib.Pipeline.FramePipeline;
 using ObjectDetectionLib.Pipeline.FramePipelineContext;
 using ObjectDetectionLib.Pipeline.Processors.DepthFrameProcessor;
 using ObjectDetectionLib.Pipeline.Processors.DetectionFrameProcessor;
+using ObjectDetectionLib.Pipeline.Processors.PointsFrameProcessor;
+using ObjectDetectionLib.ML.Midas.ModelData;
+using System.Drawing;
+using ObjectDetectionLib.ML.Midas.PostProcessor;
+using ObjectDetectionLib.FrameSourceResolver;
 
 string assetsRelativePath = @"../../../ML/assets";
 string assetsPath = GetAbsolutePath(assetsRelativePath);
@@ -19,52 +24,56 @@ var midasModelPath = Path.Combine(assetsPath, "Models", MidasConfiguration.Model
 var yoloModalPath = Path.Combine(assetsPath, "Models", YoloConfiguration.ModelName);
 
 var imagesFolder = Path.Combine(assetsPath, "testImages", "Depth");
+var calibrationImagesFolder = Path.Combine(assetsPath, "testImages", "Calibration", "chessNewDataSet");
 var imagesDepthResults = Path.Combine(imagesFolder, "results");
 var outputFolderEngine = Path.Combine(assetsPath, "outputImagesEngine");
 var outputFolderPack = Path.Combine(assetsPath, "outputImagesPack");
 
-//CvDepthMapper mapper = new ();
-//
-//SGBMOptions options = new()
-//{
-//    NumDisparities = 32,
-//    BlockSize = 10,
-//    Disp12MaxDiff = 10,
-//    PreFilterCap = 0,
-//    SpeckleWindowSize = 60,
-//    SpeckleRange = 7
-//};
-//
-//double focal = 1020.5;
-//double baseline = 0.135;
-//
-//Mat left = CvInvoke.Imread(Path.Combine(imagesFolder, "lightL.jpg"));
-//Mat right = CvInvoke.Imread(Path.Combine(imagesFolder, "lightR.jpg"));
-//
-//Point interest = new(679, 251);
-//
-//Rectangle rectangle = new(535, 401, 228, 274);
-//
-//mapper.CalibrateSGBM(left, right, rectangle, focal, baseline, 0.25);
 
+#region Working pipeline
+
+FramesSource data = FramesSource.LoadFromFile(@"F:\\file.json");
 MLContext mlContext = new();
 
 var yoloScorer = new YoloV4OnnxScorer(mlContext, yoloModalPath);
 var midasScorer = new MidasOnnxScorer(mlContext, midasModelPath);
 
-var yoloEngine = yoloScorer.CreateEngine();
-var midasEngine = midasScorer.CreateEngine();
+Console.WriteLine("Creating YOLO engine...");
+using var yoloEngine = yoloScorer.CreateEngine();
+Console.WriteLine("Done.");
 
+Console.WriteLine("Creating MiDaS engine...");
+using var midasEngine = midasScorer.CreateEngine();
+Console.WriteLine("Done.");
+
+Console.WriteLine("Creating pipeline...");
 IFramePipelineContext context = new FramePipelineContext();
 FramePipeline pipeline = new (context);
 
 IFrameProcessor detectionProcessor = new DetectionFrameProcessor(yoloEngine);
 IFrameProcessor depthProcessor = new DepthFrameProcessor(midasEngine);
+IFrameProcessor pointsProcessor = new PointsFrameProcessor();
 
 pipeline.AddStep(detectionProcessor);
 pipeline.AddStep(depthProcessor);
+pipeline.AddStep(pointsProcessor);
 
-CvCamera.StartCameraProcess(pipeline, "http://192.168.0.5:8080/video");
+Console.WriteLine("Done.");
+
+var image = MLImage.CreateFromFile(Path.Combine(imagesFolder, "frame1.png"));
+var result = midasEngine.Predict(new MidasInputData(image));
+var postResult = MidasPostProcessor.GetResult(result, new Size(image.Width, image.Height));
+
+var inverted = MidasPostProcessor.InvertDepth(postResult.PredictedDepth);
+
+Mat pureDepths = MidasPostProcessor.ConvertFloatsToMat(postResult.PredictedDepth);
+Mat invertedDepths = MidasPostProcessor.ConvertFloatsToMat(inverted);
+
+CvInvoke.Imwrite(Path.Combine(imagesFolder, "pureDepth.jpg"), pureDepths);
+CvInvoke.Imwrite(Path.Combine(imagesFolder, "invertedDepth.jpg"), invertedDepths);
+StaticFrameSourceResolver.StartStaticProcess(data, pipeline);
+
+#endregion
 
 static string GetAbsolutePath(string relativePath)
 {
@@ -74,35 +83,4 @@ static string GetAbsolutePath(string relativePath)
     string fullPath = Path.Combine(assemblyFolderPath, relativePath);
 
     return fullPath;
-}
-
-static void RenameFiles(string filePath)
-{
-    var files = Directory.GetFiles(filePath).Select((value, index) => new { value, index });
-
-    foreach(var file in files)
-    {
-        string newName = Path.Combine(filePath, $"image{file.index + 1}.jpg");
-
-        if (!File.Exists(newName))
-            File.Move(file.value, newName);
-    }
-}
-
-static Mat ConvertFloatsToMat(float[] points, int width, int height, int modelDimension)
-{
-    using Mat depthMat = new(modelDimension, modelDimension, DepthType.Cv32F, 1);
-
-    System.Runtime.InteropServices.Marshal.Copy(points, 0, depthMat.DataPointer, points.Length);
-
-    CvInvoke.Normalize(depthMat, depthMat, 0, 255, NormType.MinMax, DepthType.Cv32F);
-
-    Mat displayMat = new();
-    depthMat.ConvertTo(displayMat, DepthType.Cv8U);
-
-
-    //Mat resizedMat = new ();
-    //CvInvoke.Resize(displayMat, resizedMat, new Size(width, height), 0, 0, Inter.Cubic);
-
-    return displayMat;
 }

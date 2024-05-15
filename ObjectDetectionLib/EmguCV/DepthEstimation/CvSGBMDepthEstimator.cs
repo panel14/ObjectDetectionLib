@@ -18,13 +18,13 @@ namespace ObjectDetectionLib.EmguCV
         public int SpeckleRange { get; set; } = 0;
     }
 
-    public class CvDepthMapper
+    public class CvSGBMDepthEstimator
     {
         public SGBMOptions CalibratedOptions { get; set; }
 
         public bool IsCalibrated { get; private set; }
 
-        public CvDepthMapper()
+        public CvSGBMDepthEstimator()
         {
             CalibratedOptions = new SGBMOptions();
             IsCalibrated = false;
@@ -104,6 +104,7 @@ namespace ObjectDetectionLib.EmguCV
                                     $"{curMinDisparity}; " +
                                     $"{curNumDisparities}; " +
                                     $"{curBlockSize}; COMPUTED DISTANSE: {curDistanse} (real threashold: {curThreshold})");
+                                return;
                             }
                             else if (curThreshold - threshold > 0.3)
                             {

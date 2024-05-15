@@ -2,14 +2,14 @@
 {
     public static class MidasConfiguration
     {
-        public const string ModelName = "dpt_swin2_tiny_256.onnx";
+        public const string ModelName = "dpt_swin2_base_384.onnx";
 
-        public const int ModelDimension = 256;
+        public const int ModelDimension = 384;
 
         public record MidasImageSettings
         {
-            public const int ImageWidth = 256;
-            public const int ImageHeight = 256;
+            public const int ImageWidth = 384;
+            public const int ImageHeight = 384;
         }
 
         public record MidasModelsDataSettings

@@ -1,55 +1,71 @@
 ﻿
+using Emgu.CV.CvEnum;
+using Emgu.CV;
 using ObjectDetectionLib.ML.Midas.ModelData;
+using ObjectDetectionLib.ML.Midas.Results;
 using System.Drawing;
 
 namespace ObjectDetectionLib.ML.Midas.PostProcessor
 {
     public static class MidasPostProcessor
     {
-        private static Point GetMidlePoint(Rectangle rectangle)
+        public static float[] InvertDepth(float[] depths)
         {
-            int x = rectangle.Left + rectangle.Width / 2;
-            int y = rectangle.Top + rectangle.Height / 2;
+            var middle = (depths.Max() - depths.Min()) / 2;
+            //var average = depths.Average();
 
-            return new Point(x, y);
+            float[] result = new float[depths.Length];
+
+            for (int i = 0; i < depths.Length; i++) 
+            { 
+                var diff = middle - depths[i];
+                result[i] = depths[i] + 2 * diff;
+            }
+            return result;
         }
 
-        public static float GetDepth(MidasOutputData data, int srcWidth, int srcHeight, Rectangle? area = null)
+        public static Mat ConvertFloatsToMat(float[] points)
         {
-            if (data.PredictedDepth.Length > 0)
+            using Mat depthMat = new(MidasConfiguration.ModelDimension, MidasConfiguration.ModelDimension, DepthType.Cv32F, 1);
+
+            System.Runtime.InteropServices.Marshal.Copy(points, 0, depthMat.DataPointer, points.Length);
+
+            CvInvoke.Normalize(depthMat, depthMat, 0, 255, NormType.MinMax, DepthType.Cv32F);
+
+            Mat displayMat = new();
+            depthMat.ConvertTo(displayMat, DepthType.Cv8U);
+
+            return displayMat;
+        }
+
+        private static Size ComputeNewDimensions(Size dimensions)
+        {
+            int newHeight;
+            int newWidth;
+
+            if (dimensions.Height > dimensions.Width)
             {
-                if (area.HasValue)
-                {
-                    int newHeight;
-                    int newWidth;
-
-                    if (srcHeight > srcWidth)
-                    {
-                        float scaleCoef = (float)MidasConfiguration.ModelDimension / srcHeight;
-                        newHeight = MidasConfiguration.ModelDimension;
-                        newWidth = (int) (srcWidth * scaleCoef);
-                    }
-                    else
-                    {
-                        float scaleCoef = (float)MidasConfiguration.ModelDimension / srcWidth;
-                        newHeight = (int)(srcHeight * scaleCoef);
-                        newWidth = MidasConfiguration.ModelDimension;
-                    }
-
-                    float widthScale = newWidth / (float)srcWidth;
-                    float heightScale = newHeight / (float)srcHeight;
-
-                    var middlePoint = GetMidlePoint(area.Value);
-
-                    var convertedMiddlePoint = new Point((int)(middlePoint.X * widthScale), (int)(middlePoint.Y * heightScale));
-
-                    return data.PredictedDepth[newWidth * convertedMiddlePoint.Y + convertedMiddlePoint.X];
-                }
-
-                return data.PredictedDepth.Max();
+                float scaleCoef = (float)MidasConfiguration.ModelDimension / dimensions.Height;
+                newHeight = MidasConfiguration.ModelDimension;
+                newWidth = (int)(dimensions.Width * scaleCoef);
+            }
+            else
+            {
+                float scaleCoef = (float)MidasConfiguration.ModelDimension / dimensions.Width;
+                newHeight = (int)(dimensions.Height * scaleCoef);
+                newWidth = MidasConfiguration.ModelDimension;
             }
 
-            return 0;
+            return new Size(newWidth, newHeight);
+        }
+
+        public static DepthEstimationResult GetResult(MidasOutputData data, Size originImageSize)
+        {
+            return new () { 
+                PredictedDepth = data.PredictedDepth,
+                OriginImageSize = originImageSize,
+                ResultImageSize = ComputeNewDimensions(originImageSize)
+            };
         }
     }
 }

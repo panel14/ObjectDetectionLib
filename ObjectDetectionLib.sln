@@ -5,7 +5,9 @@ VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectDetectionLib", "ObjectDetectionLib\ObjectDetectionLib.csproj", "{FCFD984F-68D2-406C-A046-3CA47E1F37A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGMSetupUtil", "SGMSetupUtil\SGMSetupUtil.csproj", "{E06AB81C-7B3E-4C34-895D-8BD81474347B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGMSetupUtil", "SGMSetupUtil\SGMSetupUtil.csproj", "{E06AB81C-7B3E-4C34-895D-8BD81474347B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointsVisualization", "PointsVisualization\PointsVisualization.csproj", "{B1C98B4E-390A-4FEA-96E5-E0F7A60A3C62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{E06AB81C-7B3E-4C34-895D-8BD81474347B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E06AB81C-7B3E-4C34-895D-8BD81474347B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06AB81C-7B3E-4C34-895D-8BD81474347B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1C98B4E-390A-4FEA-96E5-E0F7A60A3C62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1C98B4E-390A-4FEA-96E5-E0F7A60A3C62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1C98B4E-390A-4FEA-96E5-E0F7A60A3C62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1C98B4E-390A-4FEA-96E5-E0F7A60A3C62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
