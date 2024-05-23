@@ -7,6 +7,7 @@ using ObjectDetectionLib.Pipeline.InitValueModels;
 using ObjectDetectionLib.Extensions;
 using ObjectDetectionLib.ML.Midas.PostProcessor;
 using System.Drawing;
+using ObjectDetectionLib.ML.YoloV4.Results;
 
 namespace ObjectDetectionLib.Pipeline.Processors.DepthFrameProcessor
 {
@@ -17,7 +18,16 @@ namespace ObjectDetectionLib.Pipeline.Processors.DepthFrameProcessor
             using MLImage image = context.GetInitValue<FramePipelineInitValue>().FrameInfo.Frame.ToMLImage();
             var depthMap = midasEngine.Predict(new MidasInputData(image));
 
-            context.AddProcessorResult(MidasPostProcessor.GetResult(depthMap, new Size(image.Width, image.Height)));
+            var detectionResults = context.GetProcessorResult<IReadOnlyCollection<ObjectDetectionResult>>();
+
+            Rectangle? detectionRect = null;
+
+            if (detectionResults.Count > 0)
+            {
+                detectionRect = detectionResults.FirstOrDefault()?.Rect;
+            }
+
+            context.AddProcessorResult(MidasPostProcessor.GetResult(depthMap, new Size(image.Width, image.Height), detectionRect));
 
             return ProcessorResult.SUCCESS;
         }

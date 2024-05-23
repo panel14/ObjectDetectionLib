@@ -1,5 +1,6 @@
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using ObjectDetectionLib.EmguCV;
 using ObjectDetectionLib.EmguCV.DepthEstimation;
 
 namespace SGMSetupUtil
@@ -15,7 +16,7 @@ namespace SGMSetupUtil
 
         TextBox[] textBoxes;
 
-        readonly CvDepthSGBMMapper DepthMapper;
+        readonly CvSGBMDepthEstimator DepthMapper;
 
         Mat LeftImage;
         Mat RightImage;

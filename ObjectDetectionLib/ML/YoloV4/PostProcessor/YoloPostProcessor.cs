@@ -1,6 +1,5 @@
 ﻿// ported from https://github.com/jerhon/hs-object-dectection-service/blob/main/src/Honlsoft.ML.ObjectDetection/Models/Yolov4/YoloPostProcessor.cs
 
-using ObjectDetectionLib.ML.YoloV4;
 using ObjectDetectionLib.ML.YoloV4.ModelData;
 using ObjectDetectionLib.ML.YoloV4.Results;
 using System.Diagnostics;
@@ -9,7 +8,7 @@ namespace ObjectDetectionLib.ML.YoloV4.PostProcessor
 {
     public static class YoloPostProcessor
     {
-        public static IReadOnlyList<ObjectDetectionResult> GetResults(YoloOutputData outputData, float scoreThres = 0.5f, float iouThres = 0.8f)
+        public static IReadOnlyList<ObjectDetectionResult> GetResults(YoloOutputData outputData, float scoreThres = 0.8f, float iouThres = 0.5f)
         {
             List<float[]> postProcesssedResults = [];
             int anchorsCount = YoloConfiguration.Anchors.Length;

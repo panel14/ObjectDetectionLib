@@ -6,12 +6,6 @@ using System.Text.Json;
 
 namespace ObjectDetectionLib.InputModels
 {
-    public class CameraSensorSize
-    {
-        public required double SensorWidthMM { get; init; }
-        public required double SensorHeightMM { get; init;}
-    }
-
     public class FrameInfo
     {
         public required Mat Frame { get; init; }
@@ -37,6 +31,12 @@ namespace ObjectDetectionLib.InputModels
             public required double HorizontalFrontOfView { get; init; }
                           
             public required double VerticalFrontOfView { get; init; }
+
+            public required bool Save3DMap { get; init; }
+            public required string Path3DMap { get; init; }
+
+            public required bool Save2DMap { get; init; }
+            public required string Path2DMap { get; init; }
         }
 
         public required string AIM { get; init; }
@@ -47,6 +47,11 @@ namespace ObjectDetectionLib.InputModels
 
         public required double VerticalFrontOfView { get; init; }
 
+        public required bool Save3DMap { get; init; }
+        public required string Path3DMap { get; init; }
+
+        public required bool Save2DMap { get; init; }
+        public required string Path2DMap { get; init; }
 
         public static FramesSource LoadFromFile(string fileName)
         {
@@ -77,7 +82,11 @@ namespace ObjectDetectionLib.InputModels
                 AIM = raw.AIM,
                 Frames = frames, 
                 HorizontalFrontOfView = raw.HorizontalFrontOfView, 
-                VerticalFrontOfView = raw.VerticalFrontOfView, 
+                VerticalFrontOfView = raw.VerticalFrontOfView,
+                Save3DMap = raw.Save3DMap,
+                Path3DMap = raw.Path3DMap,
+                Save2DMap = raw.Save2DMap,
+                Path2DMap = raw.Path2DMap,
             };
         }
     }

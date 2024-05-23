@@ -1,4 +1,5 @@
 ﻿using Emgu.CV;
+using Emgu.CV.Structure;
 using System.Drawing;
 
 namespace ObjectDetectionLib.ML.Midas.Results
@@ -10,5 +11,7 @@ namespace ObjectDetectionLib.ML.Midas.Results
         public required Size OriginImageSize { get; init; }
 
         public required Size ResultImageSize { get; init; }
+
+        public int? AimResizedIndex { get; init; }
     }
 }

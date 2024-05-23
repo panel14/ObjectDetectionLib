@@ -4,6 +4,7 @@ using Emgu.CV;
 using ObjectDetectionLib.ML.Midas.ModelData;
 using ObjectDetectionLib.ML.Midas.Results;
 using System.Drawing;
+using Emgu.CV.Structure;
 
 namespace ObjectDetectionLib.ML.Midas.PostProcessor
 {
@@ -59,12 +60,27 @@ namespace ObjectDetectionLib.ML.Midas.PostProcessor
             return new Size(newWidth, newHeight);
         }
 
-        public static DepthEstimationResult GetResult(MidasOutputData data, Size originImageSize)
+        private static int ComputeResizedAimIndex(Rectangle box, Size dimensions)
+        {
+            var newDimensions = ComputeNewDimensions(dimensions);
+            double scaleCoef = (double)newDimensions.Width / dimensions.Width;
+
+            double middleX = box.Left + box.Width / 2;
+            double middleY = box.Top + box.Height / 2;
+
+            middleX *= scaleCoef;
+            middleY *= scaleCoef;
+
+            return (int)middleY * newDimensions.Width + (int)middleX;
+        }
+
+        public static DepthEstimationResult GetResult(MidasOutputData data, Size originImageSize, Rectangle? box)
         {
             return new () { 
                 PredictedDepth = data.PredictedDepth,
                 OriginImageSize = originImageSize,
-                ResultImageSize = ComputeNewDimensions(originImageSize)
+                ResultImageSize = ComputeNewDimensions(originImageSize),
+                AimResizedIndex = box.HasValue ? ComputeResizedAimIndex(box.Value, originImageSize) : null,
             };
         }
     }

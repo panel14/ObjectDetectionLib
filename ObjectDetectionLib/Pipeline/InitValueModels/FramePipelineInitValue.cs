@@ -1,6 +1,6 @@
 ﻿
 using Emgu.CV.Structure;
-using ObjectDetectionLib.Cartographer.PointsCombine.Models;
+using ObjectDetectionLib.Cartographer.Models;
 using ObjectDetectionLib.InputModels;
 
 namespace ObjectDetectionLib.Pipeline.InitValueModels

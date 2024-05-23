@@ -17,20 +17,18 @@ namespace ObjectDetectionLib.Pipeline.FramePipeline
             context.AddInitValue(initValue);
 
             ProcessorResult processorResult = ProcessorResult.NO_RESULT;
+            List<ProcessorResult> results = [];
+
 
             foreach (var step in _pipelineSteps)
             {
                 var result = step.Process(context);
-
-                if (result == ProcessorResult.SUCCESS)
-                {
-                    processorResult = result;
-                }
+                results.Add(result);
             }
 
             PipelineResult pipelineResult = new()
             {
-                ResultStatus = processorResult,
+                ResultStatus = results.All(r => r == ProcessorResult.SUCCESS) ? ProcessorResult.SUCCESS : ProcessorResult.NO_RESULT,
 
                 Results = new Dictionary<string, object>(context.GetAllProcessorsResult())
             };
